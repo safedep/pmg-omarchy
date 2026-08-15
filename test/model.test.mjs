@@ -85,14 +85,13 @@ test("feedRows is newest-first, filtered, capped, and projected", () => {
   assert.equal(rows[1].severity, "hold");
 });
 
-test("feedRows collapses consecutive duplicates into one row with a count", () => {
+test("feedRows collapses duplicates into one row with a count", () => {
   const dup = (sec) => ({ event_type: "malware_blocked", package_name: "safedep-test-pkg", version: "0.0.4", ecosystem: "ECOSYSTEM_PYPI", timestamp: ago(sec) });
   const events = [
     { event_type: "install_allowed", package_name: "express", version: "4.18.2", ecosystem: "npm", timestamp: ago(400) },
-    dup(300), dup(200), dup(100), // three identical blocks, newest last
+    dup(300), dup(200), dup(100),
   ];
   const rows = M.feedRows(events, 10, T0);
-  // newest-first: the collapsed block row, then express
   assert.equal(rows.length, 2);
   assert.equal(rows[0].pkg, "safedep-test-pkg");
   assert.equal(rows[0].count, 3);
@@ -101,14 +100,18 @@ test("feedRows collapses consecutive duplicates into one row with a count", () =
   assert.equal(rows[1].count, 1);
 });
 
-test("feedRows does not merge non-consecutive duplicates", () => {
-  const blk = { event_type: "malware_blocked", package_name: "a", version: "1", ecosystem: "npm", timestamp: ago(300) };
-  const other = { event_type: "install_allowed", package_name: "b", version: "1", ecosystem: "npm", timestamp: ago(200) };
-  const blk2 = { event_type: "malware_blocked", package_name: "a", version: "1", ecosystem: "npm", timestamp: ago(100) };
-  const rows = M.feedRows([blk, other, blk2], 10, T0);
-  assert.equal(rows.length, 3);
-  assert.equal(rows[0].pkg, "a");
-  assert.equal(rows[0].count, 1);
+test("feedRows merges alternating duplicates regardless of position", () => {
+  const a = (sec) => ({ event_type: "malware_blocked", package_name: "safedep-test-pkg", version: "0.0.4", ecosystem: "ECOSYSTEM_PYPI", timestamp: ago(sec) });
+  const b = (sec) => ({ event_type: "malware_blocked", package_name: "safedep-test-pkg", version: "0.1.3", ecosystem: "ECOSYSTEM_NPM", timestamp: ago(sec) });
+  // A, B, A, B, A, B in chronological order
+  const rows = M.feedRows([a(600), b(500), a(400), b(300), a(200), b(100)], 10, T0);
+  assert.equal(rows.length, 2);
+  // newest-first: B (0.1.3/npm) was newest, then A
+  assert.equal(rows[0].version, "0.1.3");
+  assert.equal(rows[0].ecosystem, "npm");
+  assert.equal(rows[0].count, 3);
+  assert.equal(rows[1].version, "0.0.4");
+  assert.equal(rows[1].count, 3);
 });
 
 test("newBlocksSince returns only newer blocks, newest first", () => {
