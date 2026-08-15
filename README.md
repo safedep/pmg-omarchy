@@ -49,6 +49,17 @@ Configure via Omarchy's plugin settings (`omarchy plugin` UI) or the bar config:
 | `showOverlay` | On | Show the fullscreen alert on a block. |
 | `notifyOnBlock` | On | Send a desktop notification on a block. |
 
+## Update
+
+Plugins are not updated automatically. Pull the latest version manually:
+
+```bash
+omarchy plugin update io.github.safedep.pmg
+```
+
+Omarchy fetches the changes, re-validates the plugin, and reloads the shell (it
+rolls back automatically if the new version fails validation).
+
 ## Remove
 
 ```bash
