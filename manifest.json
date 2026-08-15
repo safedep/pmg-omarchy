@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.safedep.pmg",
+  "name": "PMG",
+  "version": "0.1.0",
+  "author": "SafeDep",
+  "license": "Apache-2.0",
+  "description": "Supply-chain protection in the bar: a shield that shows PMG's status and turns red the moment it blocks malware.",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "PmgWidget.qml" },
+  "barWidget": {
+    "displayName": "PMG",
+    "description": "One shield icon and a panel: protection health, the active layers, today's tally, and a live feed of what PMG allowed, held, and blocked.",
+    "category": "Security",
+    "aliases": ["pmg", "safedep"],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "refreshIntervalSec": 30,
+      "feedLimit": 12,
+      "showOverlay": "On",
+      "notifyOnBlock": "On"
+    },
+    "schema": [
+      { "key": "refreshIntervalSec", "type": "integer", "label": "Status refresh interval (seconds)", "min": 10, "max": 3600, "step": 5, "defaultValue": 30, "description": "How often to poll `pmg setup info --json` for protection health and layers." },
+      { "key": "feedLimit", "type": "integer", "label": "Activity feed rows", "min": 5, "max": 50, "step": 1, "defaultValue": 12, "description": "How many recent events to show in the panel's activity feed." },
+      { "key": "showOverlay", "type": "enum", "label": "Fullscreen alert on a block", "options": ["On", "Off"], "defaultValue": "On", "description": "Show a fullscreen alert the moment PMG blocks a malicious package." },
+      { "key": "notifyOnBlock", "type": "enum", "label": "Desktop notification on a block", "options": ["On", "Off"], "defaultValue": "On", "description": "Send an omarchy notification when PMG blocks a malicious package." }
+    ]
+  }
+}
