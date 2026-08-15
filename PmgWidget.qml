@@ -44,7 +44,7 @@ Panel {
 
   readonly property string heroTitle: {
     if (!svc.pmgAvailable) return "PMG unavailable"
-    if (!svc.pmgSupported) return "PMG needs updating"
+    if (!svc.pmgSupported) return "PMG outdated"
     switch (svc.health) {
     case "protected": return "Protected"
     case "degraded": return "Degraded"
@@ -52,12 +52,12 @@ Panel {
     }
     return "PMG"
   }
+  // Keep the detail pill short. PanelHero draws it on the title row without
+  // eliding, so a long string overflows the panel. Counts live in TODAY.
   readonly property string heroDetail: {
-    if (!svc.pmgAvailable) return "pmg was not found on PATH"
-    if (!svc.pmgSupported) return "Update PMG to 0.26 or later for live status"
-    if (svc.needsSetup) return "Run pmg setup install to activate protection"
-    var t = svc.today
-    return t.analyzed + " vetted today · " + t.allowed + " allowed · " + t.held + " held · " + t.blocked + " blocked"
+    if (!svc.pmgSupported && svc.pmgAvailable) return "update to 0.26+"
+    if (svc.needsSetup) return "not set up"
+    return ""
   }
   readonly property string barTooltip: {
     if (!svc.pmgAvailable) return "PMG not available on PATH"
