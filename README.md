@@ -1,5 +1,7 @@
 # PMG for Omarchy
 
+[![CI](https://github.com/safedep/pmg-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/safedep/pmg-omarchy/actions/workflows/ci.yml)
+
 A native [Omarchy](https://omarchy.org) (Quattro) bar plugin for
 [PMG](https://github.com/safedep/pmg) — SafeDep's install-time package firewall.
 
