@@ -49,30 +49,6 @@ Configure via Omarchy's plugin settings (`omarchy plugin` UI) or the bar config:
 | `showOverlay` | On | Show the fullscreen alert on a block. |
 | `notifyOnBlock` | On | Send a desktop notification on a block. |
 
-## Testing it works
-
-Real block (uses PMG's benign test package, flagged as malicious for testing):
-
-```bash
-npm install --no-cache --prefer-online safedep-test-pkg@0.1.3
-```
-
-The shield flashes red, the overlay appears, and the block lands in the feed.
-
-To exercise the overlay without a package manager, append a synthetic event to
-today's log:
-
-```bash
-LOG=~/.config/safedep/pmg/logs/$(date +%Y%m%d)-pmg.log
-printf '{"timestamp":"%s","event_type":"malware_blocked","package_name":"pino-sdk-v2","version":"2.0.1","ecosystem":"npm","message":"Typosquat of pino; exfiltrates environment variables"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$LOG"
-```
-
-### Plugin QA checklist
-
-Per the Omarchy plugin testing guidance: click, <kbd>Esc</kbd>, shell open and
-close, disable, re-enable, shell restart, removal — plus a theme switch (colours
-should follow the active theme) and a real `malware_blocked` driving the overlay.
-
 ## Remove
 
 ```bash
