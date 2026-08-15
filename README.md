@@ -5,10 +5,20 @@
 A native [Omarchy](https://omarchy.org) (Quattro) bar plugin for
 [PMG](https://github.com/safedep/pmg), SafeDep's install-time package firewall.
 
-A package icon in the bar shows your supply-chain protection at a glance. It
-turns red when PMG blocks a package. Click it for a panel with the active
-protection layers, today's tally, and a live feed of what PMG allowed, held, and
-blocked.
+<div align="center">
+<table>
+  <tr>
+    <td align="center" valign="top">
+      <img src="docs/assets/demo-2.png" width="280" alt="PMG panel: protection layers, today's tally, and recent activity"><br>
+      <sub>The panel: protection layers, today's tally, and live activity.</sub>
+    </td>
+    <td align="center" valign="top">
+      <img src="docs/assets/demo-1.png" width="410" alt="PMG block overlay: a malicious package stopped before any code ran"><br>
+      <sub>The alert the moment PMG blocks a malicious install.</sub>
+    </td>
+  </tr>
+</table>
+</div>
 
 The plugin only shows information. It reads what PMG exposes: `pmg setup info
 --json` for health and layers, and PMG's event log for activity. It has no
