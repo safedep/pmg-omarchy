@@ -83,8 +83,7 @@ Panel {
     foreground: root.severityColor(svc.severity)
     tooltipText: root.barTooltip
     onPressed: function (buttonCode) {
-      if (buttonCode === Qt.RightButton) root.runDoctor()
-      else root.toggle()
+      if (buttonCode === Qt.LeftButton) root.toggle()
     }
   }
 
