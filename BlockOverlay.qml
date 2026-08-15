@@ -25,7 +25,7 @@ PanelWindow {
   readonly property string eco: shown ? PmgModel.humanizeEcosystem(blockEvent.ecosystem) : ""
   readonly property string reason: shown && blockEvent.message
     ? blockEvent.message
-    : "A malicious package was blocked before any install script could run."
+    : "Flagged as malicious and blocked before any install script ran."
 
   visible: shown
   anchors { top: true; bottom: true; left: true; right: true }
@@ -91,7 +91,7 @@ PanelWindow {
         }
         Text {
           anchors.horizontalCenter: parent.horizontalCenter
-          text: "Malware blocked"
+          text: "Package blocked"
           color: overlay.danger
           font.bold: true
           font.family: overlay.fontFamily

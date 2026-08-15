@@ -82,6 +82,7 @@ Panel {
     tooltipText: root.barTooltip
     onPressed: function (buttonCode) {
       if (buttonCode === Qt.LeftButton) root.toggle()
+      else if (buttonCode === Qt.RightButton) root.runInfo()
     }
   }
 
@@ -93,6 +94,9 @@ Panel {
 
   function runDoctor() {
     if (root.bar) root.bar.run("omarchy-launch-floating-terminal-with-presentation 'pmg setup doctor'")
+  }
+  function runInfo() {
+    if (root.bar) root.bar.run("omarchy-launch-floating-terminal-with-presentation 'pmg setup info'")
   }
   function runSetup() {
     if (root.bar) root.bar.run("omarchy-launch-floating-terminal-with-presentation 'pmg setup install'")

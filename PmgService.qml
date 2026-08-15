@@ -159,7 +159,7 @@ Item {
       var name = (ev.package_name || "unknown") + (ev.version ? "@" + ev.version : "")
       var eco = ev.ecosystem ? " (" + ev.ecosystem + ")" : ""
       Quickshell.execDetached([root.omarchyPath + "/bin/omarchy-notification-send",
-        "PMG blocked malware", name + eco + " — install aborted"])
+        "PMG blocked a package", name + eco + " — install aborted"])
     }
   }
 }

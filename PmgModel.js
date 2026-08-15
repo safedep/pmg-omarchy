@@ -19,8 +19,8 @@ var SEVERITY = {
 };
 
 var LABEL = {
-    malware_blocked: "malware blocked",
-    malware_confirmed: "malware allowed by user",
+    malware_blocked: "blocked",
+    malware_confirmed: "allowed by user",
     install_insecure_bypass: "insecure bypass",
     dependency_cooldown: "cooldown hold",
     install_allowed: "allowed",
