@@ -22,9 +22,6 @@ PanelWindow {
     ? (blockEvent.package_name || "unknown") + (blockEvent.version ? "@" + blockEvent.version : "")
     : ""
   readonly property string eco: shown ? PmgModel.humanizeEcosystem(blockEvent.ecosystem) : ""
-  readonly property string reason: shown && blockEvent.message
-    ? blockEvent.message
-    : "Flagged as malicious and blocked before any install script ran."
 
   visible: shown
   anchors { top: true; bottom: true; left: true; right: true }
@@ -81,17 +78,35 @@ PanelWindow {
         width: keyCatcher.width - Style.spacing.panelPadding * 2
         spacing: Style.spacing.sm
 
-        Text {
+        Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
-          text: ""
-          color: overlay.danger
-          font.family: overlay.fontFamily
-          font.pixelSize: Style.font.displayLarge
+          width: Style.space(54)
+          height: Style.space(54)
+          radius: width / 2
+          color: Qt.rgba(overlay.danger.r, overlay.danger.g, overlay.danger.b, 0.14)
+          border.width: 1
+          border.color: overlay.danger
+          Text {
+            anchors.centerIn: parent
+            text: ""
+            color: overlay.danger
+            font.family: overlay.fontFamily
+            font.pixelSize: Style.font.display
+          }
         }
         Text {
           anchors.horizontalCenter: parent.horizontalCenter
-          text: "Package blocked"
+          text: "BLOCKED BY PMG"
           color: overlay.danger
+          font.family: overlay.fontFamily
+          font.pixelSize: Style.font.caption
+          font.bold: true
+          font.letterSpacing: 2
+        }
+        Text {
+          anchors.horizontalCenter: parent.horizontalCenter
+          text: "Malicious package stopped"
+          color: Color.menu.text
           font.bold: true
           font.family: overlay.fontFamily
           font.pixelSize: Style.font.heading
@@ -103,18 +118,36 @@ PanelWindow {
           font.family: overlay.fontFamily
           font.pixelSize: Style.font.title
         }
+        Rectangle {
+          visible: overlay.eco !== ""
+          anchors.horizontalCenter: parent.horizontalCenter
+          implicitWidth: ecoText.implicitWidth + Style.space(14)
+          implicitHeight: ecoText.implicitHeight + Style.space(5)
+          radius: Style.space(4)
+          color: "transparent"
+          border.width: 1
+          border.color: Qt.darker(Color.menu.text, 1.9)
+          Text {
+            id: ecoText
+            anchors.centerIn: parent
+            text: overlay.eco
+            color: Qt.darker(Color.menu.text, 1.2)
+            font.family: overlay.fontFamily
+            font.pixelSize: Style.font.caption
+          }
+        }
         Text {
           width: parent.width
           horizontalAlignment: Text.AlignHCenter
           wrapMode: Text.WordWrap
-          text: overlay.reason + (overlay.eco ? " · " + overlay.eco : "")
-          color: Qt.darker(Color.menu.text, 1.2)
+          text: "PMG blocked this install before any code could run."
+          color: Qt.darker(Color.menu.text, 1.3)
           font.family: overlay.fontFamily
           font.pixelSize: Style.font.body
         }
         Text {
           anchors.horizontalCenter: parent.horizontalCenter
-          text: "Install aborted. Nothing ran."
+          text: "Nothing was executed"
           color: overlay.danger
           font.family: overlay.fontFamily
           font.pixelSize: Style.font.bodySmall
