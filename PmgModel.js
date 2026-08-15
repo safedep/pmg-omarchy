@@ -1,13 +1,11 @@
 .pragma library
 
-// PmgModel is the pure, UI-free core of the plugin: it turns PMG's JSONL event
-// log lines and `pmg setup info --json` output into the small shapes the QML
-// binds to. Keeping it framework-free makes the logic testable with plain JS
-// (see test/model.test.mjs) and keeps the QML declarative.
+// PmgModel is the pure logic core. It turns PMG event-log lines into the shapes
+// the QML binds to. It has no framework code, so plain JS tests cover it
+// (test/model.test.mjs).
 
-// Verdict vocabulary from internal/audit/event.go, mapped to a display severity.
-// "block" is the security win (red), "hold" is a cooldown deferral (amber),
-// "allow" is a clean install (green), "info" is context we show muted.
+// Map each verdict to a display severity: block (red), hold (amber),
+// allow (green), info (muted).
 var SEVERITY = {
     malware_blocked: "block",
     malware_confirmed: "block",
@@ -28,15 +26,12 @@ var LABEL = {
     sandbox_override: "sandbox override",
 };
 
-// Events worth showing in the activity feed. Lifecycle/bookkeeping events
-// (install_started, dependency_resolved, proxy_host_observed, session_complete,
-// dependency_cooldown_skipped) are intentionally excluded.
+// True for events the feed shows. Lifecycle and bookkeeping events are excluded.
 function isDisplayable(ev) {
     return !!ev && SEVERITY.hasOwnProperty(ev.event_type);
 }
 
-// A malware_blocked event is the moment the overlay fires. malware_confirmed is
-// a user override (they proceeded), so it is not a "we blocked it" moment.
+// True only for a real block. malware_confirmed is a user override, not a block.
 function isBlock(ev) {
     return !!ev && ev.event_type === "malware_blocked";
 }
@@ -49,8 +44,7 @@ function labelOf(ev) {
     return (ev && LABEL[ev.event_type]) || (ev ? ev.event_type : "");
 }
 
-// parseLine turns one JSONL line into an event object, or null for blanks and
-// malformed lines (a corrupt line must never break the feed).
+// Parse one JSONL line to an event, or null for a blank or bad line.
 function parseLine(line) {
     var trimmed = String(line || "").trim();
     if (!trimmed) return null;
@@ -79,9 +73,8 @@ function timestampMillis(ev) {
     return isNaN(t) ? 0 : t;
 }
 
-// humanizeEcosystem turns PMG's proto-enum ecosystem string into a friendly
-// label: "ECOSYSTEM_PYPI" -> "pypi", "npm" -> "npm". Unspecified/unknown enum
-// values become "" so the UI shows nothing rather than noise.
+// Turn the proto enum ecosystem into a label, so ECOSYSTEM_PYPI becomes pypi.
+// Unspecified or unknown becomes "" so the UI shows nothing.
 function humanizeEcosystem(eco) {
     var s = String(eco || "").replace(/^ECOSYSTEM_/i, "").toLowerCase();
     if (s === "unspecified" || s === "unknown") return "";
@@ -110,9 +103,8 @@ function feedRows(events, limit, nowMillis) {
     return rows;
 }
 
-// todayCounts sums the per-package verdict events in one day's log. session_complete
-// carries the same totals as a per-run rollup, so it is deliberately not counted
-// here (that would double count the individual events).
+// Sum the per-package verdict events in one day's log. Do not count
+// session_complete, because it repeats the totals and would double count.
 function todayCounts(events) {
     var counts = { analyzed: 0, allowed: 0, blocked: 0, held: 0 };
     for (var i = 0; i < events.length; i++) {
@@ -132,9 +124,8 @@ function todayCounts(events) {
     return counts;
 }
 
-// newBlocksSince returns malware_blocked events strictly newer than cutoffMillis,
-// newest first. The Service uses this to fire the overlay only for genuinely new
-// blocks, never replaying history on shell restart / first load.
+// Return block events newer than cutoffMillis, newest first. The Service uses
+// this to alert only on new blocks and to skip history on start.
 function newBlocksSince(events, cutoffMillis) {
     var out = [];
     for (var i = 0; i < events.length; i++) {
@@ -159,9 +150,7 @@ function relativeTime(tsMillis, nowMillis) {
     return d + "d";
 }
 
-// dailyLogName returns the date-stamped log file name PMG writes for a given
-// date (see internal/eventlog: "20060102-pmg.log"). The Service recomputes this
-// so the feed follows the file across midnight rotation.
+// Return the date-stamped log file name PMG writes, like 20260815-pmg.log.
 function dailyLogName(date) {
     var d = date || new Date();
     var y = d.getFullYear();
@@ -170,8 +159,7 @@ function dailyLogName(date) {
     return "" + y + m + day + "-pmg.log";
 }
 
-// healthSeverity maps the `health` field from `pmg setup info --json` to the
-// widget's colour intent. Unknown/missing reads as unprotected.
+// Map the health field to a colour intent. Unknown reads as unprotected.
 function healthSeverity(health) {
     switch (health) {
     case "protected":

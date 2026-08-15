@@ -3,9 +3,8 @@ import Quickshell
 import qs.Commons
 import qs.Ui
 
-// Entry point: a package icon in the bar plus its panel. The root Panel doubles as the
-// bar slot (implicit size follows the button) and hosts the popup. All state
-// comes from PmgService; this file is presentation only.
+// Entry point: a package icon in the bar and its panel. The root Panel is the
+// bar slot and hosts the popup. All state comes from PmgService.
 Panel {
   id: root
   moduleName: "io.github.safedep.pmg"
@@ -19,10 +18,11 @@ Panel {
   readonly property color track: Style.selectedFillFor(foreground, Color.accent)
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
 
-  // Semantic status colours. Green/amber have no theme token (like PMG's own
-  // doctor output), so they are fixed; red tracks the theme's urgent role.
-  readonly property color cAllow: "#37d979"
-  readonly property color cHold: "#e0af68"
+  // Semantic colours. Green and amber have no theme token, so darken them on a
+  // light surface for contrast. Red uses the theme urgent role.
+  readonly property bool lightSurface: (0.2126 * surface.r + 0.7152 * surface.g + 0.0722 * surface.b) > 0.5
+  readonly property color cAllow: lightSurface ? "#1f9d57" : "#37d979"
+  readonly property color cHold: lightSurface ? "#b0771c" : "#e0af68"
   readonly property color cBlock: urgent
 
   function severityColor(sev) {
@@ -44,6 +44,7 @@ Panel {
 
   readonly property string heroTitle: {
     if (!svc.pmgAvailable) return "PMG unavailable"
+    if (!svc.pmgSupported) return "PMG needs updating"
     switch (svc.health) {
     case "protected": return "Protected"
     case "degraded": return "Degraded"
@@ -53,12 +54,14 @@ Panel {
   }
   readonly property string heroDetail: {
     if (!svc.pmgAvailable) return "pmg was not found on PATH"
+    if (!svc.pmgSupported) return "Update PMG to 0.26 or later for live status"
     if (svc.needsSetup) return "Run pmg setup install to activate protection"
     var t = svc.today
     return t.analyzed + " vetted today · " + t.allowed + " allowed · " + t.held + " held · " + t.blocked + " blocked"
   }
   readonly property string barTooltip: {
     if (!svc.pmgAvailable) return "PMG not available on PATH"
+    if (!svc.pmgSupported) return "PMG is too old for live status. Update to 0.26 or later."
     var t = svc.today
     return "PMG: " + svc.health + " · " + t.analyzed + " vetted today"
       + (t.blocked > 0 ? " · " + t.blocked + " blocked" : "")
@@ -190,8 +193,15 @@ Panel {
       id: keyCatcher
       anchors.fill: parent
       onCloseRequested: root.close()
+      // PanelKeyCatcher consumes the arrow keys, so drive the Flickable here.
+      onMoveRequested: function (dx, dy) {
+        if (dy === 0) return
+        var max = Math.max(0, flick.contentHeight - flick.height)
+        flick.contentY = Math.max(0, Math.min(max, flick.contentY + dy * Style.space(48)))
+      }
 
       Flickable {
+        id: flick
         anchors.fill: parent
         contentHeight: body.implicitHeight
         clip: true
@@ -225,6 +235,7 @@ Panel {
             spacing: Style.space(2)
             visible: svc.layers !== null
 
+            PanelSeparator { width: parent.width; foreground: root.foreground }
             PanelSectionHeader {
               text: "PROTECTION LAYERS"
               foreground: root.foreground
@@ -251,14 +262,24 @@ Panel {
             }
             LayerRow {
               label: "MITM CA"
-              value: svc.layers && svc.layers.ca && svc.layers.ca.trusted
-                ? "trusted (" + svc.layers.ca.scope + ")" : "not trusted"
-              valueColor: svc.layers && svc.layers.ca && svc.layers.ca.trusted ? root.cAllow : root.dim
+              value: {
+                var ca = svc.layers ? svc.layers.ca : null
+                if (!ca || !ca.trusted) return "not trusted"
+                var s = "trusted (" + ca.scope + ")"
+                if (ca.expires) s += " · exp " + String(ca.expires).slice(0, 10)
+                return s
+              }
+              valueColor: {
+                var ca = svc.layers ? svc.layers.ca : null
+                if (!ca || !ca.trusted) return root.dim
+                if (ca.expires && Date.parse(ca.expires) - svc.nowMs < 30 * 86400000) return root.cHold
+                return root.cAllow
+              }
             }
             LayerRow {
               label: "Persistent proxy"
               value: svc.layers && svc.layers.proxy && svc.layers.proxy.running
-                ? svc.layers.proxy.addr : "off"
+                ? svc.layers.proxy.addr : "not running"
               valueColor: svc.layers && svc.layers.proxy && svc.layers.proxy.running ? root.cAllow : root.dim
             }
           }
@@ -268,6 +289,7 @@ Panel {
             width: parent.width
             spacing: Style.space(6)
 
+            PanelSeparator { width: parent.width; foreground: root.foreground }
             PanelSectionHeader {
               text: "TODAY"
               foreground: root.foreground
@@ -312,6 +334,7 @@ Panel {
             width: parent.width
             spacing: Style.space(2)
 
+            PanelSeparator { width: parent.width; foreground: root.foreground }
             PanelSectionHeader {
               text: "RECENT ACTIVITY"
               foreground: root.foreground
@@ -384,6 +407,7 @@ Panel {
             width: parent.width
             spacing: Style.space(6)
 
+            PanelSeparator { width: parent.width; foreground: root.foreground }
             ActionButton {
               label: "Run pmg setup install"
               visible: svc.needsSetup

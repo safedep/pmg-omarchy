@@ -3,10 +3,9 @@ import Quickshell
 import Quickshell.Io
 import "PmgModel.js" as PmgModel
 
-// PmgService is the headless data engine. It polls `pmg setup info --json` for
-// protection health + layers and watches today's JSONL event log for the live
-// feed and block alerts. It owns all state and exposes it as bindable
-// properties; the widget and panel are pure presentation over it.
+// PmgService is the data engine. It polls `pmg setup info --json` for health and
+// layers, and watches today's event log for the feed and block alerts. It owns
+// all state. The widget and panel show it.
 Item {
   id: root
   visible: false
@@ -30,19 +29,22 @@ Item {
 
   property var status: null
   property bool pmgAvailable: true
+  // False when pmg runs but gives no JSON. This means a build before PMG 0.26.
+  property bool pmgSupported: true
 
-  readonly property string health: status && status.health ? status.health
-                                                           : (pmgAvailable ? "unknown" : "unavailable")
-  readonly property string severity: pmgAvailable ? PmgModel.healthSeverity(status ? status.health : undefined) : "bad"
+  readonly property string health: !pmgAvailable ? "unavailable"
+                                 : !pmgSupported ? "outdated"
+                                 : (status && status.health ? status.health : "unknown")
+  readonly property string severity: !pmgAvailable ? "bad"
+                                    : !pmgSupported ? "warn"
+                                    : PmgModel.healthSeverity(status ? status.health : undefined)
   readonly property var layers: status && status.layers ? status.layers : null
   readonly property var shellInfo: status && status.shell_integration ? status.shell_integration : null
   readonly property string version: status && status.version ? status.version : ""
-  // Unprotected with an installed-but-unconfigured PMG: the panel offers a
-  // one-click setup instead of an empty dashboard.
+  // True when pmg is installed but not set up. The panel then offers setup.
   readonly property bool needsSetup: pmgAvailable && status !== null && status.protected === false
 
-  // A login shell resolves PMG on PATH even when the compositor launched the
-  // Omarchy shell with a minimal environment.
+  // A login shell finds pmg on PATH under a minimal compositor environment.
   Process {
     id: infoProc
     running: false
@@ -52,9 +54,12 @@ Item {
       onStreamFinished: root.applyInfo(text)
     }
     onExited: function (exitCode) {
+      if (exitCode === 0) return
       if (exitCode === 127) {
         root.pmgAvailable = false
         root.status = null
+      } else {
+        root.pmgSupported = false
       }
     }
   }
@@ -69,9 +74,10 @@ Item {
       if (parsed && typeof parsed === "object") {
         root.status = parsed
         root.pmgAvailable = true
+        root.pmgSupported = true
       }
     } catch (e) {
-      // Transient parse failure (e.g. a truncated read): keep the last status.
+      // Keep the last status on a parse failure, for example a truncated read.
     }
   }
 
@@ -85,8 +91,7 @@ Item {
 
   // ------------------------------------------------------------- event log
 
-  // Recomputed on a timer so the feed follows the date-stamped log across
-  // midnight rotation without restarting the shell.
+  // Recompute on a timer so the feed follows the log across midnight rotation.
   property string logName: PmgModel.dailyLogName(new Date())
   readonly property string logPath: logDir + "/" + logName
 
@@ -111,9 +116,9 @@ Item {
   readonly property var today: PmgModel.todayCounts(events)
   readonly property var feed: PmgModel.feedRows(events, feedLimit, nowMs)
 
-  // blockCutoff is the newest block timestamp already surfaced. It starts unset
-  // so the first load establishes a baseline instead of replaying history.
-  property double blockCutoff: -1
+  // Seed the cutoff to start time. Blocks written after start always alert.
+  // Older history never replays, including the first read of a new day's log.
+  property double blockCutoff: Date.now()
   property var pendingBlock: null
   function clearPendingBlock() { pendingBlock = null }
 
@@ -127,28 +132,18 @@ Item {
     onLoadFailed: root.events = []
   }
 
-  function newestTimestamp(evs) {
-    var m = 0
-    for (var i = 0; i < evs.length; i++) {
-      var t = PmgModel.timestampMillis(evs[i])
-      if (t > m) m = t
-    }
-    return m
-  }
-
   function applyLog(text) {
     var evs = PmgModel.parseLog(text)
     root.events = evs
 
-    if (root.blockCutoff < 0) {
-      root.blockCutoff = newestTimestamp(evs)
-      return
-    }
-
     var fresh = PmgModel.newBlocksSince(evs, root.blockCutoff)
-    if (fresh.length > 0) {
-      root.blockCutoff = PmgModel.timestampMillis(fresh[0])
-      root.onBlock(fresh[0])
+    if (fresh.length === 0) return
+
+    // fresh is newest-first. Advance the cutoff past all of them. Alert
+    // oldest-first so a burst notifies in order. The overlay ends on the newest.
+    root.blockCutoff = PmgModel.timestampMillis(fresh[0])
+    for (var i = fresh.length - 1; i >= 0; i--) {
+      root.onBlock(fresh[i])
     }
   }
 
@@ -157,9 +152,10 @@ Item {
 
     if (root.notifyOnBlock && root.omarchyPath !== "") {
       var name = (ev.package_name || "unknown") + (ev.version ? "@" + ev.version : "")
-      var eco = ev.ecosystem ? " (" + ev.ecosystem + ")" : ""
+      var ecoLabel = PmgModel.humanizeEcosystem(ev.ecosystem)
+      var eco = ecoLabel ? " (" + ecoLabel + ")" : ""
       Quickshell.execDetached([root.omarchyPath + "/bin/omarchy-notification-send",
-        "PMG blocked a package", name + eco + " — install aborted"])
+        "PMG blocked a package", name + eco + ". Install aborted."])
     }
   }
 }

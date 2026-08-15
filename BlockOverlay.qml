@@ -5,10 +5,9 @@ import qs.Commons
 import qs.Ui
 import "PmgModel.js" as PmgModel
 
-// Fullscreen alert raised the moment PMG blocks a malicious package. Modeled on
-// the built-in Reminders overlay: a scrimmed Wayland overlay layer with a
-// centered card and exclusive keyboard focus. Setting blockEvent shows it;
-// dismissing emits dismissed() so the service can clear its pending block.
+// Fullscreen alert for a blocked package. It uses the Reminders overlay pattern:
+// a scrimmed Wayland layer with a centered card and exclusive focus. Set
+// blockEvent to show it. Dismiss emits dismissed().
 PanelWindow {
   id: overlay
 
@@ -115,7 +114,7 @@ PanelWindow {
         }
         Text {
           anchors.horizontalCenter: parent.horizontalCenter
-          text: "Install aborted — nothing executed"
+          text: "Install aborted. Nothing ran."
           color: overlay.danger
           font.family: overlay.fontFamily
           font.pixelSize: Style.font.bodySmall
