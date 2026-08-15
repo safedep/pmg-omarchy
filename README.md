@@ -3,16 +3,16 @@
 [![CI](https://github.com/safedep/pmg-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/safedep/pmg-omarchy/actions/workflows/ci.yml)
 
 A native [Omarchy](https://omarchy.org) (Quattro) bar plugin for
-[PMG](https://github.com/safedep/pmg) — SafeDep's install-time package firewall.
+[PMG](https://github.com/safedep/pmg), SafeDep's install-time package firewall.
 
-One shield in the bar shows your supply-chain protection at a glance and turns
-red the moment PMG blocks a malicious package. Click it for a panel with the
-active protection layers, today's tally, and a live feed of what PMG allowed,
-held, and blocked.
+A package icon in the bar shows your supply-chain protection at a glance. It
+turns red when PMG blocks a package. Click it for a panel with the active
+protection layers, today's tally, and a live feed of what PMG allowed, held, and
+blocked.
 
-The plugin is pure presentation. It reads what PMG already exposes — `pmg setup
-info --json` for health and layers, and PMG's JSONL event log for activity — and
-contains no security logic of its own.
+The plugin only shows information. It reads what PMG exposes: `pmg setup info
+--json` for health and layers, and PMG's event log for activity. It has no
+security logic of its own.
 
 ## Requirements
 
