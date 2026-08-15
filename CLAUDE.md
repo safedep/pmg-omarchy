@@ -43,5 +43,6 @@ bash scripts/validate.sh                                 # manifest and structur
 omarchy plugin validate "$PWD"                           # manifest schema
 ```
 
-Run all four before you commit. CI runs the model tests and the linters on every
-pull request.
+Run all four before you commit. CI runs the model tests and the manifest and
+structure check. qmllint needs the Omarchy shell modules, so it runs locally and
+in the pre-commit hook, not in CI.

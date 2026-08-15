@@ -4,3 +4,7 @@ pre-commit:
     secrets-scanning:
       files: git diff --name-only --diff-filter=d --staged
       run: 'if command -v gitleaks > /dev/null 2>&1; then gitleaks protect --no-banner --staged --redact --verbose; else echo "WARNING: gitleaks is not installed. Please install it. See https://github.com/gitleaks/gitleaks#installing"; fi'
+    qmllint:
+      glob: "*.qml"
+      # Needs the Omarchy shell modules, so it runs only on an Omarchy machine.
+      run: 'if command -v qmllint > /dev/null 2>&1 && [ -n "$OMARCHY_PATH" ]; then qmllint -I "$OMARCHY_PATH/shell" {staged_files}; else echo "qmllint skipped (needs qmllint and OMARCHY_PATH)"; fi'
