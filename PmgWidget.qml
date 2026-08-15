@@ -3,7 +3,7 @@ import Quickshell
 import qs.Commons
 import qs.Ui
 
-// Entry point: a shield in the bar plus its panel. The root Panel doubles as the
+// Entry point: a package icon in the bar plus its panel. The root Panel doubles as the
 // bar slot (implicit size follows the button) and hosts the popup. All state
 // comes from PmgService; this file is presentation only.
 Panel {
@@ -76,7 +76,7 @@ Panel {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: ""
+    text: "󰏗"
     slotSize: Style.bar.statusSlot
     fontSize: Style.font.caption
     useActiveColor: false
@@ -210,7 +210,7 @@ Panel {
             fontFamily: root.fontFamily
             iconComponent: Component {
               Text {
-                text: ""
+                text: "󰏗"
                 color: root.severityColor(svc.severity)
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.display

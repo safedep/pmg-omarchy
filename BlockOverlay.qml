@@ -83,7 +83,7 @@ PanelWindow {
 
         Text {
           anchors.horizontalCenter: parent.horizontalCenter
-          text: ""
+          text: ""
           color: overlay.danger
           font.family: overlay.fontFamily
           font.pixelSize: Style.font.displayLarge
