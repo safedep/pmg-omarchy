@@ -38,19 +38,6 @@ Move it to a different bar section if you like:
 omarchy bar move io.github.safedep.pmg --section right
 ```
 
-## What you see
-
-- **Bar shield** — green/neutral when protected, amber when degraded (e.g. a
-  missing shim or an expiring CA), red when unprotected or when a block just
-  fired. Hover for a one-line summary; left-click opens the panel; right-click
-  runs `pmg setup doctor` in a floating terminal.
-- **Panel** — protection layers (threat intel, cooldown, sandbox, MITM CA,
-  persistent proxy), today's allowed/held/blocked tally, and a live activity
-  feed. Footer actions run doctor, open the log directory, and (when PMG is
-  installed but not yet set up) run `pmg setup install`.
-- **Block alert** — a fullscreen overlay the instant PMG blocks malware, backed
-  by a desktop notification. Press <kbd>Esc</kbd> or click to dismiss.
-
 ## Settings
 
 Configure via Omarchy's plugin settings (`omarchy plugin` UI) or the bar config:
