@@ -77,8 +77,6 @@ Panel {
     anchors.fill: parent
     bar: root.bar
     text: "󰏗"
-    slotSize: Style.bar.statusSlot
-    fontSize: Style.font.caption
     useActiveColor: false
     foreground: root.severityColor(svc.severity)
     tooltipText: root.barTooltip
