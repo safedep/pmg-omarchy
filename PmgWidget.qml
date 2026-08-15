@@ -329,6 +329,35 @@ Panel {
             }
           }
 
+          // ---- Actions ----
+          // Kept above the feed so they never need scrolling to reach.
+          Column {
+            width: parent.width
+            spacing: Style.space(6)
+
+            PanelSeparator { width: parent.width; foreground: root.foreground }
+            ActionButton {
+              width: parent.width
+              label: "Run pmg setup install"
+              visible: svc.needsSetup
+              onClicked: root.runSetup()
+            }
+            Row {
+              width: parent.width
+              spacing: Style.space(6)
+              ActionButton {
+                width: (parent.width - Style.space(6)) / 2
+                label: "Run doctor"
+                onClicked: root.runDoctor()
+              }
+              ActionButton {
+                width: (parent.width - Style.space(6)) / 2
+                label: "Open logs"
+                onClicked: root.openLogs()
+              }
+            }
+          }
+
           // ---- Recent activity ----
           Column {
             width: parent.width
@@ -402,26 +431,6 @@ Panel {
             }
           }
 
-          // ---- Actions ----
-          Column {
-            width: parent.width
-            spacing: Style.space(6)
-
-            PanelSeparator { width: parent.width; foreground: root.foreground }
-            ActionButton {
-              label: "Run pmg setup install"
-              visible: svc.needsSetup
-              onClicked: root.runSetup()
-            }
-            ActionButton {
-              label: "Run doctor"
-              onClicked: root.runDoctor()
-            }
-            ActionButton {
-              label: "Open logs"
-              onClicked: root.openLogs()
-            }
-          }
         }
       }
     }
