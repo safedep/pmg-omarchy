@@ -49,25 +49,6 @@ Configure via Omarchy's plugin settings (`omarchy plugin` UI) or the bar config:
 | `showOverlay` | On | Show the fullscreen alert on a block. |
 | `notifyOnBlock` | On | Send a desktop notification on a block. |
 
-## How it works
-
-```
-pmg setup info --json  ──poll (Timer)──▶  PmgService  ──▶  bar shield colour + panel layers
-~/.config/safedep/pmg/logs/YYYYMMDD-pmg.log ──watch (FileView)──▶  feed, today counts, block overlay
-```
-
-`PmgService.qml` owns all state; `PmgModel.js` is the pure, framework-free logic
-(event parsing, today counts, block detection) and is unit-tested with plain
-Node — no Wayland session required:
-
-```bash
-node --test
-```
-
-The event log path follows PMG's daily rotation across midnight, and the overlay
-only fires for blocks newer than what was already on disk when the shell
-started, so history is never replayed.
-
 ## Testing it works
 
 Real block (uses PMG's benign test package, flagged as malicious for testing):
