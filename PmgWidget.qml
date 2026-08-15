@@ -42,22 +42,16 @@ Panel {
     return dim
   }
 
-  readonly property string heroTitle: {
-    if (!svc.pmgAvailable) return "PMG unavailable"
-    if (!svc.pmgSupported) return "PMG outdated"
+  // The hero title is always "PMG". This is the status word for the badge.
+  readonly property string heroBadge: {
+    if (!svc.pmgAvailable) return "Unavailable"
+    if (!svc.pmgSupported) return "Outdated"
     switch (svc.health) {
     case "protected": return "Protected"
     case "degraded": return "Degraded"
     case "unprotected": return "Unprotected"
     }
-    return "PMG"
-  }
-  // Keep the detail pill short. PanelHero draws it on the title row without
-  // eliding, so a long string overflows the panel. Counts live in TODAY.
-  readonly property string heroDetail: {
-    if (!svc.pmgSupported && svc.pmgAvailable) return "update to 0.26+"
-    if (svc.needsSetup) return "not set up"
-    return ""
+    return "Unknown"
   }
   readonly property string barTooltip: {
     if (!svc.pmgAvailable) return "PMG not available on PATH"
@@ -219,9 +213,8 @@ Panel {
 
           PanelHero {
             width: parent.width
-            title: root.heroTitle
-            meta: svc.version !== "" ? "PMG " + svc.version : "PMG"
-            detail: root.heroDetail
+            title: "PMG"
+            meta: svc.version !== "" ? "v" + svc.version : ""
             foreground: root.foreground
             fontFamily: root.fontFamily
             iconComponent: Component {
@@ -230,6 +223,26 @@ Panel {
                 color: root.severityColor(svc.severity)
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.display
+              }
+            }
+            trailingControl: Component {
+              Rectangle {
+                property color sev: root.severityColor(svc.severity)
+                radius: Style.space(5)
+                implicitWidth: heroBadgeText.implicitWidth + Style.space(14)
+                implicitHeight: heroBadgeText.implicitHeight + Style.space(6)
+                color: Qt.rgba(sev.r, sev.g, sev.b, 0.14)
+                border.width: 1
+                border.color: sev
+                Text {
+                  id: heroBadgeText
+                  anchors.centerIn: parent
+                  text: root.heroBadge
+                  color: sev
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
               }
             }
           }
