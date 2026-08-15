@@ -79,6 +79,15 @@ function timestampMillis(ev) {
     return isNaN(t) ? 0 : t;
 }
 
+// humanizeEcosystem turns PMG's proto-enum ecosystem string into a friendly
+// label: "ECOSYSTEM_PYPI" -> "pypi", "npm" -> "npm". Unspecified/unknown enum
+// values become "" so the UI shows nothing rather than noise.
+function humanizeEcosystem(eco) {
+    var s = String(eco || "").replace(/^ECOSYSTEM_/i, "").toLowerCase();
+    if (s === "unspecified" || s === "unknown") return "";
+    return s;
+}
+
 // feedRows projects displayable events into newest-first view rows, capped.
 function feedRows(events, limit, nowMillis) {
     var rows = [];
@@ -89,7 +98,7 @@ function feedRows(events, limit, nowMillis) {
         rows.push({
             severity: severityOf(ev),
             verdict: labelOf(ev),
-            ecosystem: ev.ecosystem || "",
+            ecosystem: humanizeEcosystem(ev.ecosystem),
             pkg: pkg,
             version: ev.version || "",
             ts: timestampMillis(ev),

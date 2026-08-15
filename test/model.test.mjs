@@ -110,6 +110,15 @@ test("dailyLogName matches PMG's YYYYMMDD-pmg.log", () => {
   assert.equal(M.dailyLogName(new Date("2026-01-05T00:00:00Z")), "20260105-pmg.log");
 });
 
+test("humanizeEcosystem strips the proto enum prefix and lowercases", () => {
+  assert.equal(M.humanizeEcosystem("ECOSYSTEM_PYPI"), "pypi");
+  assert.equal(M.humanizeEcosystem("ECOSYSTEM_NPM"), "npm");
+  assert.equal(M.humanizeEcosystem("npm"), "npm");
+  assert.equal(M.humanizeEcosystem("ECOSYSTEM_UNSPECIFIED"), "");
+  assert.equal(M.humanizeEcosystem(""), "");
+  assert.equal(M.humanizeEcosystem(null), "");
+});
+
 test("healthSeverity maps info health to widget intent", () => {
   assert.equal(M.healthSeverity("protected"), "ok");
   assert.equal(M.healthSeverity("degraded"), "warn");

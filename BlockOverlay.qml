@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
+import "PmgModel.js" as PmgModel
 
 // Fullscreen alert raised the moment PMG blocks a malicious package. Modeled on
 // the built-in Reminders overlay: a scrimmed Wayland overlay layer with a
@@ -21,7 +22,7 @@ PanelWindow {
   readonly property string pkg: shown
     ? (blockEvent.package_name || "unknown") + (blockEvent.version ? "@" + blockEvent.version : "")
     : ""
-  readonly property string eco: shown && blockEvent.ecosystem ? blockEvent.ecosystem : ""
+  readonly property string eco: shown ? PmgModel.humanizeEcosystem(blockEvent.ecosystem) : ""
   readonly property string reason: shown && blockEvent.message
     ? blockEvent.message
     : "A malicious package was blocked before any install script could run."
