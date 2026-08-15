@@ -85,6 +85,32 @@ test("feedRows is newest-first, filtered, capped, and projected", () => {
   assert.equal(rows[1].severity, "hold");
 });
 
+test("feedRows collapses consecutive duplicates into one row with a count", () => {
+  const dup = (sec) => ({ event_type: "malware_blocked", package_name: "safedep-test-pkg", version: "0.0.4", ecosystem: "ECOSYSTEM_PYPI", timestamp: ago(sec) });
+  const events = [
+    { event_type: "install_allowed", package_name: "express", version: "4.18.2", ecosystem: "npm", timestamp: ago(400) },
+    dup(300), dup(200), dup(100), // three identical blocks, newest last
+  ];
+  const rows = M.feedRows(events, 10, T0);
+  // newest-first: the collapsed block row, then express
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].pkg, "safedep-test-pkg");
+  assert.equal(rows[0].count, 3);
+  assert.equal(rows[0].ecosystem, "pypi");
+  assert.equal(rows[1].pkg, "express");
+  assert.equal(rows[1].count, 1);
+});
+
+test("feedRows does not merge non-consecutive duplicates", () => {
+  const blk = { event_type: "malware_blocked", package_name: "a", version: "1", ecosystem: "npm", timestamp: ago(300) };
+  const other = { event_type: "install_allowed", package_name: "b", version: "1", ecosystem: "npm", timestamp: ago(200) };
+  const blk2 = { event_type: "malware_blocked", package_name: "a", version: "1", ecosystem: "npm", timestamp: ago(100) };
+  const rows = M.feedRows([blk, other, blk2], 10, T0);
+  assert.equal(rows.length, 3);
+  assert.equal(rows[0].pkg, "a");
+  assert.equal(rows[0].count, 1);
+});
+
 test("newBlocksSince returns only newer blocks, newest first", () => {
   const events = [
     { event_type: "malware_blocked", package_name: "old", timestamp: ago(600) },

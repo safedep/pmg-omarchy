@@ -81,26 +81,42 @@ function humanizeEcosystem(eco) {
     return s;
 }
 
-// feedRows projects displayable events into newest-first view rows, capped.
+// feedRows projects displayable events into newest-first view rows. It collapses
+// consecutive identical rows into one row with a count, then caps the result.
 function feedRows(events, limit, nowMillis) {
     var rows = [];
     for (var i = 0; i < events.length; i++) {
         var ev = events[i];
         if (!isDisplayable(ev)) continue;
-        var pkg = ev.package_name || "";
         rows.push({
             severity: severityOf(ev),
             verdict: labelOf(ev),
             ecosystem: humanizeEcosystem(ev.ecosystem),
-            pkg: pkg,
+            pkg: ev.package_name || "",
             version: ev.version || "",
             ts: timestampMillis(ev),
             ago: relativeTime(timestampMillis(ev), nowMillis),
+            count: 1,
         });
     }
     rows.reverse();
-    if (limit && rows.length > limit) rows = rows.slice(0, limit);
-    return rows;
+
+    var collapsed = [];
+    for (var j = 0; j < rows.length; j++) {
+        var prev = collapsed.length ? collapsed[collapsed.length - 1] : null;
+        if (prev && sameFeedRow(prev, rows[j])) {
+            prev.count++;
+        } else {
+            collapsed.push(rows[j]);
+        }
+    }
+    if (limit && collapsed.length > limit) collapsed = collapsed.slice(0, limit);
+    return collapsed;
+}
+
+function sameFeedRow(a, b) {
+    return a.pkg === b.pkg && a.version === b.version && a.ecosystem === b.ecosystem
+        && a.severity === b.severity && a.verdict === b.verdict;
 }
 
 // Sum the per-package verdict events in one day's log. Do not count

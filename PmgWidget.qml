@@ -117,6 +117,7 @@ Panel {
     width: parent ? parent.width : 0
     implicitHeight: Style.space(22)
     Text {
+      id: layerLabel
       anchors.left: parent.left
       anchors.verticalCenter: parent.verticalCenter
       text: label
@@ -125,8 +126,12 @@ Panel {
       font.pixelSize: Style.font.body
     }
     Text {
+      anchors.left: layerLabel.right
+      anchors.leftMargin: Style.spacing.md
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
+      horizontalAlignment: Text.AlignRight
+      elide: Text.ElideRight
       text: value
       color: valueColor
       font.family: root.fontFamily
@@ -266,7 +271,10 @@ Panel {
                 var ca = svc.layers ? svc.layers.ca : null
                 if (!ca || !ca.trusted) return "not trusted"
                 var s = "trusted (" + ca.scope + ")"
-                if (ca.expires) s += " · exp " + String(ca.expires).slice(0, 10)
+                // Show the expiry only when it is within a year, to avoid noise.
+                if (ca.expires && Date.parse(ca.expires) - svc.nowMs < 365 * 86400000) {
+                  s += " · exp " + String(ca.expires).slice(0, 10)
+                }
                 return s
               }
               valueColor: {
@@ -421,7 +429,9 @@ Panel {
                   Text {
                     width: parent.width
                     elide: Text.ElideRight
-                    text: modelData.verdict + (modelData.ecosystem !== "" ? " · " + modelData.ecosystem : "")
+                    text: modelData.verdict
+                      + (modelData.ecosystem !== "" ? " · " + modelData.ecosystem : "")
+                      + (modelData.count > 1 ? " · ×" + modelData.count : "")
                     color: root.rowColor(modelData.severity)
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.caption
